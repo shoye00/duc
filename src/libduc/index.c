@@ -466,7 +466,17 @@ static void scanner_scan(struct scanner *scanner_dir)
 	/* Iterate directory entries */
 
 	struct dirent *e;
-	while( (e = readdir(scanner_dir->d)) != NULL) {
+	while(1) {
+		errno = 0;
+		e = readdir(scanner_dir->d);
+		if(e == NULL) {
+			if(errno != 0) {
+				duc_log(duc, DUC_LOG_WRN, "Error reading directory %s: %s",
+					scanner_dir->ent.name, strerror(errno));
+				continue;
+			}
+			break;
+		}
 
 		/* Skip . and .. */
 
@@ -605,6 +615,7 @@ static void scanner_scan(struct scanner *scanner_dir)
 
 		}
 	}
+
 
 	r = chdir("..");
 	if(r != 0) {
